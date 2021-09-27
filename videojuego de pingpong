@@ -1,0 +1,145 @@
+hola soy juani,estoy en tiktok como juanixdf_ y hago todo tipo de proyectos de electronica y ahora he iniciado con ardiuino"electro programacion"
+asi que aca les dejo este codigo para que puedan fabricar su videojuego de pingpong con arduino.
+he tenido mucha ayuda de mi amigo adrian de nairdarobotprogramming, asi lo pueden buscar en tiktok
+y el da clases tambien de arduino acerca de todo lo que es arduino y les puede enseñar a programar el lenguaje c++
+"lenguaje de programacion arduino"
+pueden escribirle a su instagram que esta en su perfil,pueden  solicitarle una clase y el les pasara presupuesto,
+saludos los quiero a todos y gracias por los casi 90k en tiktok les deseo mucha suerte con este codigo 
+para fabricar el juego.
+en mi tiktok estara el esquematico, es el ultimo video hecho y lo hare paso a paso no se lo pierdan.
+!copien lo de abajo apartir de donde dice #ledcontrol.h!
+
+
+
+#include <LedControl.h>
+
+int DIN = 12;
+int CS =  11;
+int CLK = 10;
+
+byte displayImage[8]=     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+int xPos=0;
+int yPos=0;
+
+bool addX=true;
+bool addY=true;
+
+int points=0;
+
+int barPos=0;
+
+LedControl lc=LedControl(DIN,CLK,CS,0);
+
+
+void renderByte(byte image [])
+{
+  int i = 0;
+  for(i=0;i<8;i++)
+  {
+    lc.setRow(0,i,image[i]);
+  }
+}
+
+
+void setPixel(int x, int y, bool myBit){
+  if(myBit==true){
+    displayImage[y] |= 1 << x;
+  }else{
+     displayImage[y] &= ~(1 << x);
+  }
+}
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+ lc.shutdown(0,false);       // Keep MAX72XX awake
+ lc.setIntensity(0,15);      // Set the brightness to maximum value
+ lc.clearDisplay(0);         // and clear the display
+  xPos=random(1, 6);
+  yPos=random(1, 6);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  
+  setPixel(xPos,yPos,false);
+
+  for(int i=0;i<8;i++){
+     setPixel(0,i,false);
+  }
+  int pot=analogRead(A0);
+  //Serial.println(pot);
+  barPos=map(pot,0,1023,0,5);
+  for(int i=barPos;i<barPos+3;i++){
+     setPixel(0,i,true);
+  }
+  
+  
+  if(addX==true){
+     xPos=xPos+1;
+  }else{
+     xPos=xPos-1;
+  }
+
+  if(addY==true){
+    yPos=yPos+2;
+  }else{
+    yPos=yPos-2;
+  }
+ 
+  
+
+  if(xPos>=7){
+    xPos=7;
+    addX=false;
+  }
+
+  if(xPos<=1){
+    if(yPos<barPos || yPos>barPos+3){
+      Serial.println("perdiste");
+      points=0;
+      for(int i=0;i<8;i++){
+         for(int j=0;j<8;j++){
+          setPixel(i,j,true);
+        }
+      }
+      renderByte(displayImage);
+      delay(1000);
+      for(int i=0;i<8;i++){
+         for(int j=0;j<8;j++){
+          setPixel(i,j,false);
+        }
+      }
+      renderByte(displayImage);
+    }else{
+      points=points+1;
+      Serial.println(points);
+    }
+
+    
+    xPos=1;
+    addX=true;
+
+   
+  }
+
+  if(yPos>=7){
+    yPos=7;
+    addY=false;
+  }
+
+  if(yPos<=0){
+    yPos=0;
+    addY=true;
+  }
+
+  setPixel(xPos,yPos,true);
+  
+  renderByte(displayImage);
+  delay(150);
+  
+
+}
